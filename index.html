@@ -14,6 +14,13 @@
               --danger-color: #e74c3c;
               --background-color: #f0f2f5;
               --card-color: #ffffff;
+              
+              /* ألوان نسبة الإنجاز */
+              --progress-red: #e74c3c;
+              --progress-orange: #e67e22;
+              --progress-yellow: #f1c40f;
+              --progress-light-green: #2ecc71;
+              --progress-dark-green: #27ae60;
           }
 
           * {
@@ -176,12 +183,6 @@
               color: #a0aec0;
           }
 
-          .task-completion-time {
-              font-size: 0.9rem;
-              color: #718096;
-              margin-right: 1rem;
-          }
-
           .stats-wrapper {
               background: white;
               border-radius: 20px;
@@ -210,13 +211,18 @@
               border-radius: 16px;
               text-align: center;
               border: 1px solid #e2e8f0;
+              transition: all 0.3s ease;
+          }
+
+          .stat-item:hover {
+              transform: translateY(-5px);
+              box-shadow: 0 10px 20px rgba(0,0,0,0.1);
           }
 
           .stat-number {
               font-size: 2.5rem;
               font-weight: 700;
               margin-bottom: 1rem;
-              transition: all 0.3s ease;
           }
 
           #completedTasks { color: #2ecc71; }
@@ -232,7 +238,36 @@
               font-size: 2.5rem;
               font-weight: 700;
               margin-bottom: 1rem;
-              transition: color 0.3s ease;
+              transition: all 0.3s ease;
+              position: relative;
+              display: inline-block;
+              padding: 0.5rem 1rem;
+              border-radius: 8px;
+          }
+
+          /* ألوان نسبة الإنجاز */
+          .progress-red { color: var(--progress-red); }
+          .progress-orange { color: var(--progress-orange); }
+          .progress-yellow { color: var(--progress-yellow); }
+          .progress-light-green { color: var(--progress-light-green); }
+          .progress-dark-green { color: var(--progress-dark-green); }
+
+          .completion-rate::after {
+              content: '';
+              position: absolute;
+              bottom: 0;
+              left: 0;
+              width: 100%;
+              height: 3px;
+              border-radius: 3px;
+              background: currentColor;
+              transform: scaleX(0);
+              transform-origin: left;
+              transition: transform 0.3s ease;
+          }
+
+          .completion-rate:hover::after {
+              transform: scaleX(1);
           }
 
           .save-btn {
@@ -279,7 +314,7 @@
                   <button onclick="addTask()">إضافة مهمة</button>
               </div>
               <ul class="task-list" id="taskList"></ul>
-              <button class="save-btn" onclick="confirmSave()" id="saveButton" style="display: none;">حفظ التغييرات</button>
+              <button class="save-btn" onclick="saveChanges()" id="saveButton">حفظ التغييرات</button>
           </div>
 
           <div class="stats-wrapper">
@@ -310,17 +345,25 @@
       <script>
           const defaultTasks = [
               "أذكار الصباح",
-              "أذكار المساء ",
               "سورة البقرة",
+              "أذكار المساء",
+              "الصلوات الخمس",
+              "الوتر",
               "سورة الواقعة",
-              "سورة الملك",
-              "صلاة الوتر"
+              "سورة الملك"
           ];
 
           let tasks = [];
-          let tempTasks = [];
-          let hasUnsavedChanges = false;
+          let taskHistory = {};
           const today = new Date().toISOString().split('T')[0];
+
+          function getProgressColor(rate) {
+              if (rate <= 25) return 'progress-red';
+              if (rate <= 50) return 'progress-orange';
+              if (rate <= 75) return 'progress-yellow';
+              if (rate <= 90) return 'progress-light-green';
+              return 'progress-dark-green';
+          }
 
           function updateDate() {
               const now = new Date();
@@ -328,32 +371,39 @@
               document.getElementById('gregorianDate').textContent = now.toLocaleDateString('ar-SA', {
                   year: 'numeric',
                   month: 'numeric',
-                  day: 'numeric'
+                  day: 'numeric',
+                  calendar: 'islamic'
               });
           }
 
           function loadTasks() {
-              const savedTasks = localStorage.getItem(today);
-              if (savedTasks) {
-                  tasks = JSON.parse(savedTasks);
-                  tempTasks = JSON.parse(JSON.stringify(tasks));
-              } else {
-                  const now = new Date();
+              const lastDate = localStorage.getItem('lastDate');
+              const savedHistory = localStorage.getItem('taskHistory');
+              if (savedHistory) {
+                  taskHistory = JSON.parse(savedHistory);
+              }
+              
+              if (lastDate !== today) {
                   tasks = defaultTasks.map(text => ({
                       text,
                       completed: false,
                       isDefault: true,
-                      completionDate: now.toISOString().split('T')[0],
-                      completionTime: now.toLocaleTimeString('ar-SA')
+                      completionDate: null,
+                      completionTime: null
                   }));
-                  tempTasks = JSON.parse(JSON.stringify(tasks));
+                  localStorage.setItem('lastDate', today);
                   saveTasks();
+              } else {
+                  const savedTasks = localStorage.getItem('tasks');
+                  if (savedTasks) {
+                      tasks = JSON.parse(savedTasks);
+                  }
               }
               renderTasks();
           }
 
           function saveTasks() {
-              localStorage.setItem(today, JSON.stringify(tasks));
+              localStorage.setItem('tasks', JSON.stringify(tasks));
               updateStats();
           }
 
@@ -361,50 +411,58 @@
               const input = document.getElementById('newTask');
               const text = input.value.trim();
               if (text) {
-                  const now = new Date();
-                  tempTasks.push({
+                  tasks.push({
                       text,
                       completed: false,
                       isDefault: false,
-                      completionDate: now.toISOString().split('T')[0],
-                      completionTime: now.toLocaleTimeString('ar-SA')
+                      completionDate: null,
+                      completionTime: null
                   });
                   input.value = '';
-                  hasUnsavedChanges = true;
-                  document.getElementById('saveButton').style.display = 'block';
                   renderTasks();
+                  saveTasks();
               }
           }
 
           function toggleTask(index) {
-              tempTasks[index].completed = !tempTasks[index].completed;
-              const now = new Date();
-              tempTasks[index].completionDate = now.toISOString().split('T')[0];
-              tempTasks[index].completionTime = now.toLocaleTimeString('ar-SA');
-              hasUnsavedChanges = true;
-              document.getElementById('saveButton').style.display = 'block';
+              tasks[index].completed = !tasks[index].completed;
               renderTasks();
+              saveTasks();
           }
 
-          function confirmSave() {
-              if (hasUnsavedChanges) {
-                  const now = new Date();
-                  tempTasks.forEach(task => {
-                      task.completionDate = now.toISOString().split('T')[0];
-                      task.completionTime = now.toLocaleTimeString('ar-SA');
-                  });
-                  tasks = JSON.parse(JSON.stringify(tempTasks));
-                  saveTasks();
-                  hasUnsavedChanges = false;
-                  document.getElementById('saveButton').style.display = 'none';
-                  alert('تم حفظ التغييرات بنجاح');
-              }
+          function saveChanges() {
+              const now = new Date();
+              const currentDate = now.toISOString().split('T')[0];
+              const currentTime = now.toLocaleTimeString('ar-SA');
+              const hijriDate = new Date().toLocaleDateString('ar-SA', {
+                  year: 'numeric',
+                  month: 'numeric',
+                  day: 'numeric',
+                  calendar: 'islamic'
+              });
+
+              tasks.forEach(task => {
+                  task.completionDate = currentDate;
+                  task.completionTime = currentTime;
+                  task.hijriDate = hijriDate;
+              });
+
+              taskHistory[currentDate] = {
+                  tasks: JSON.parse(JSON.stringify(tasks)),
+                  hijriDate: hijriDate
+              };
+
+              localStorage.setItem('taskHistory', JSON.stringify(taskHistory));
+              localStorage.setItem('tasks', JSON.stringify(tasks));
+              
+              updateStats();
+              alert('تم حفظ التغييرات بنجاح');
           }
 
           function renderTasks() {
               const list = document.getElementById('taskList');
               list.innerHTML = '';
-              tempTasks.forEach((task, index) => {
+              tasks.forEach((task, index) => {
                   const li = document.createElement('li');
                   li.className = `task-item ${task.completed ? 'completed' : ''}`;
                   li.innerHTML = `
@@ -412,12 +470,6 @@
                           ${task.completed ? 'checked' : ''} 
                           onchange="toggleTask(${index})">
                       <span class="task-text">${task.text}</span>
-                      ${task.completionDate ? `
-                          <span class="task-completion-time">
-                              ${task.completed ? 'تم الإنجاز' : 'آخر تحديث'}: 
-                              ${task.completionDate} ${task.completionTime}
-                          </span>
-                      ` : ''}
                   `;
                   list.appendChild(li);
               });
@@ -425,40 +477,61 @@
           }
 
           function updateStats() {
-              const total = tempTasks.length;
-              const completed = tempTasks.filter(t => t.completed).length;
+              const total = tasks.length;
+              const completed = tasks.filter(t => t.completed).length;
               const incomplete = total - completed;
               const rate = Math.round((completed / total) * 100) || 0;
 
               document.getElementById('totalTasks').textContent = total;
               document.getElementById('completedTasks').textContent = completed;
               document.getElementById('incompleteTasks').textContent = incomplete;
-
-              const rateElement = document.getElementById('completionRate');
-              rateElement.textContent = `${rate}%`;
               
-              if (rate <= 33) {
-                  rateElement.style.color = '#e74c3c';
-              } else if (rate <= 66) {
-                  rateElement.style.color = '#f1c40f';
-              } else {
-                  rateElement.style.color = '#2ecc71';
-              }
+              const completionRateElement = document.getElementById('completionRate');
+              completionRateElement.textContent = `${rate}%`;
+              
+              completionRateElement.classList.remove(
+                  'progress-red',
+                  'progress-orange',
+                  'progress-yellow',
+                  'progress-light-green',
+                  'progress-dark-green'
+              );
+              
+              completionRateElement.classList.add(getProgressColor(rate));
           }
 
           function exportToExcel() {
               const wb = XLSX.utils.book_new();
-              const ws_data = tasks.map(task => ({
-                  'المهمة': task.text,
-                  'الحالة': task.completed ? '✓ مكتملة' : '✗ غير مكتملة',
-                  'النوع': task.isDefault ? 'أساسية' : 'مخصصة',
-                  'تاريخ آخر تحديث': task.completionDate || '-',
-                  'وقت آخر تحديث': task.completionTime || '-'
-              }));
-              
-              const ws = XLSX.utils.json_to_sheet(ws_data);
-              XLSX.utils.book_append_sheet(wb, ws, "المهام");
-              XLSX.writeFile(wb, `تقرير_المهام_${today}.xlsx`);
+              let allData = [];
+
+              Object.keys(taskHistory).sort().forEach(date => {
+                  const dayData = taskHistory[date];
+                  dayData.tasks.forEach(task => {
+                      allData.push({
+                          'التاريخ الهجري': dayData.hijriDate,
+                          'التاريخ الميلادي': date,
+                          'المهمة': task.text,
+                          'الحالة': task.completed ? '✓ مكتملة' : '✗ غير مكتملة',
+                          'النوع': task.isDefault ? 'أساسية' : 'مخصصة',
+                          'وقت التحديث': task.completionTime || '-'
+                      });
+                  });
+              });
+
+              const ws = XLSX.utils.json_to_sheet(allData);
+
+              const colWidths = [
+                  { wch: 15 },
+                  { wch: 15 },
+                  { wch: 25 },
+                  { wch: 10 },
+                  { wch: 10 },
+                  { wch: 12 }
+              ];
+              ws['!cols'] = colWidths;
+
+              XLSX.utils.book_append_sheet(wb, ws, "سجل المهام");
+              XLSX.writeFile(wb, `سجل_المهام_الكامل.xlsx`);
           }
 
           document.getElementById('newTask').addEventListener('keypress', function(e) {
@@ -467,7 +540,6 @@
               }
           });
 
-          // تشغيل التطبيق
           updateDate();
           loadTasks();
       </script>
