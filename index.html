@@ -6,6 +6,9 @@
       <title>نظام المهام اليومية الإسلامية</title>
       <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
       <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+      <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+      <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+      
       <style>
           :root {
               --primary-color: #234E70;
@@ -14,13 +17,6 @@
               --danger-color: #e74c3c;
               --background-color: #f0f2f5;
               --card-color: #ffffff;
-              
-              /* ألوان نسبة الإنجاز */
-              --progress-red: #e74c3c;
-              --progress-orange: #e67e22;
-              --progress-yellow: #f1c40f;
-              --progress-light-green: #2ecc71;
-              --progress-dark-green: #27ae60;
           }
 
           * {
@@ -60,7 +56,8 @@
 
           .date-display {
               display: flex;
-              align-items: baseline;
+              flex-direction: column;
+              align-items: center;
               justify-content: center;
               gap: 0.5rem;
               margin-top: 1rem;
@@ -79,8 +76,8 @@
           }
 
           .date-value {
-              font-size: 1rem;
-              color: rgba(255, 255, 255, 0.8);
+              font-size: 1.2rem;
+              color: rgba(255, 255, 255, 0.9);
           }
 
           .container {
@@ -191,14 +188,6 @@
               margin-top: 2rem;
           }
 
-          .stats-title {
-              text-align: center;
-              color: var(--primary-color);
-              margin-bottom: 2rem;
-              font-size: 1.5rem;
-              font-weight: 700;
-          }
-
           .stats-container {
               display: grid;
               grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -214,87 +203,71 @@
               transition: all 0.3s ease;
           }
 
-          .stat-item:hover {
-              transform: translateY(-5px);
-              box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-          }
-
           .stat-number {
-              font-size: 2.5rem;
+              font-size: 2rem;
               font-weight: 700;
-              margin-bottom: 1rem;
+              margin-bottom: 0.5rem;
           }
 
-          #completedTasks { color: #2ecc71; }
-          #incompleteTasks { color: #e74c3c; }
-          #totalTasks { color: #234E70; }
+          /* تعديل ألوان الإحصائيات */
+          .stat-number.completed {
+              color: var(--success-color);
+          }
 
-          .stat-label {
-              color: #718096;
-              font-size: 1.1rem;
+          .stat-number.incomplete {
+              color: var(--danger-color);
           }
 
           .completion-rate {
-              font-size: 2.5rem;
+              font-size: 2rem;
               font-weight: 700;
-              margin-bottom: 1rem;
-              transition: all 0.3s ease;
-              position: relative;
-              display: inline-block;
-              padding: 0.5rem 1rem;
-              border-radius: 8px;
+              margin-bottom: 0.5rem;
           }
 
-          /* ألوان نسبة الإنجاز */
-          .progress-red { color: var(--progress-red); }
-          .progress-orange { color: var(--progress-orange); }
-          .progress-yellow { color: var(--progress-yellow); }
-          .progress-light-green { color: var(--progress-light-green); }
-          .progress-dark-green { color: var(--progress-dark-green); }
-
-          .completion-rate::after {
-              content: '';
-              position: absolute;
-              bottom: 0;
-              left: 0;
-              width: 100%;
-              height: 3px;
-              border-radius: 3px;
-              background: currentColor;
-              transform: scaleX(0);
-              transform-origin: left;
-              transition: transform 0.3s ease;
-          }
-
-          .completion-rate:hover::after {
-              transform: scaleX(1);
+          .stat-label {
+              color: #64748b;
+              font-size: 1.1rem;
           }
 
           .save-btn {
-              background: linear-gradient(135deg, #2ecc71, #27ae60);
-              margin: 1rem auto;
-              padding: 0.8rem 2rem;
-              font-size: 1rem;
-              border-radius: 12px;
-              display: block;
-              width: fit-content;
+              background: var(--success-color);
+              margin-top: 2rem;
+              width: 100%;
           }
 
           .export-btn {
-              background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
-              margin: 1rem auto;
-              padding: 0.8rem 2rem;
-              font-size: 1rem;
-              border-radius: 12px;
-              display: block;
-              width: fit-content;
+              background: var(--secondary-color);
+              margin-top: 2rem;
+              width: 100%;
+          }
+
+          .custom-toast {
+              font-family: 'Tajawal', sans-serif !important;
+              direction: rtl !important;
+          }
+
+          .toast-success {
+              background: linear-gradient(135deg, #2ecc71, #27ae60) !important;
+              border-radius: 12px !important;
+              box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3) !important;
           }
 
           @media (max-width: 768px) {
-              body { padding: 1rem; }
-              .header { padding: 1.5rem; }
-              .header h1 { font-size: 2rem; }
-              .input-container { flex-direction: column; }
+              body {
+                  padding: 1rem;
+              }
+
+              .header h1 {
+                  font-size: 2rem;
+              }
+
+              .input-container {
+                  flex-direction: column;
+              }
+
+              button {
+                  width: 100%;
+              }
           }
       </style>
   </head>
@@ -325,11 +298,11 @@
                       <div class="stat-label">إجمالي المهام</div>
                   </div>
                   <div class="stat-item">
-                      <div class="stat-number" id="completedTasks">0</div>
+                      <div class="stat-number completed" id="completedTasks">0</div>
                       <div class="stat-label">المهام المكتملة</div>
                   </div>
                   <div class="stat-item">
-                      <div class="stat-number" id="incompleteTasks">0</div>
+                      <div class="stat-number incomplete" id="incompleteTasks">0</div>
                       <div class="stat-label">المهام غير المكتملة</div>
                   </div>
                   <div class="stat-item">
@@ -357,23 +330,46 @@
           let taskHistory = {};
           const today = new Date().toISOString().split('T')[0];
 
-          function getProgressColor(rate) {
-              if (rate <= 25) return 'progress-red';
-              if (rate <= 50) return 'progress-orange';
-              if (rate <= 75) return 'progress-yellow';
-              if (rate <= 90) return 'progress-light-green';
-              return 'progress-dark-green';
+          function showNotification(message, type = 'success') {
+              Toastify({
+                  text: message,
+                  duration: 3000,
+                  gravity: "top",
+                  position: "center",
+                  className: `custom-toast toast-${type}`,
+                  style: {
+                      background: type === 'success' 
+                          ? "linear-gradient(135deg, #2ecc71, #27ae60)"
+                          : "linear-gradient(135deg, #e74c3c, #c0392b)",
+                      fontSize: "16px",
+                      padding: "15px 25px",
+                      borderRadius: "12px",
+                      boxShadow: type === 'success'
+                          ? "0 4px 15px rgba(46, 204, 113, 0.3)"
+                          : "0 4px 15px rgba(231, 76, 60, 0.3)",
+                  },
+                  onClick: function(){} // إغلاق الإشعار عند النقر عليه
+              }).showToast();
           }
 
           function updateDate() {
               const now = new Date();
-              document.getElementById('dayName').textContent = now.toLocaleDateString('ar-SA', { weekday: 'long' });
-              document.getElementById('gregorianDate').textContent = now.toLocaleDateString('ar-SA', {
+              const dayName = now.toLocaleDateString('ar-SA', { weekday: 'long' });
+              const hijriDate = now.toLocaleDateString('ar-SA', {
                   year: 'numeric',
                   month: 'numeric',
                   day: 'numeric',
-                  calendar: 'islamic'
+                  calendar: 'islamic-umalqura'
               });
+              const gregorianDate = now.toLocaleDateString('ar-SA', {
+                  year: 'numeric',
+                  month: 'numeric',
+                  day: 'numeric',
+                  calendar: 'gregory'
+              });
+              
+              document.getElementById('dayName').textContent = dayName;
+              document.getElementById('gregorianDate').textContent = `${hijriDate} | ${gregorianDate}`;
           }
 
           function loadTasks() {
@@ -421,6 +417,7 @@
                   input.value = '';
                   renderTasks();
                   saveTasks();
+                  showNotification('تمت إضافة المهمة بنجاح ✓');
               }
           }
 
@@ -432,19 +429,28 @@
 
           function saveChanges() {
               const now = new Date();
-              const currentDate = now.toISOString().split('T')[0];
-              const currentTime = now.toLocaleTimeString('ar-SA');
-              const hijriDate = new Date().toLocaleDateString('ar-SA', {
+              const currentDate = now.toLocaleDateString('ar-SA', {
                   year: 'numeric',
                   month: 'numeric',
                   day: 'numeric',
-                  calendar: 'islamic'
+                  calendar: 'gregory'
+              });
+              
+              const currentTime = now.toLocaleTimeString('ar-SA');
+              
+              const hijriDate = now.toLocaleDateString('ar-SA', {
+                  year: 'numeric',
+                  month: 'numeric',
+                  day: 'numeric',
+                  calendar: 'islamic-umalqura'
               });
 
               tasks.forEach(task => {
-                  task.completionDate = currentDate;
-                  task.completionTime = currentTime;
-                  task.hijriDate = hijriDate;
+                  if (task.completed) {
+                      task.completionDate = currentDate;
+                      task.completionTime = currentTime;
+                      task.hijriDate = hijriDate;
+                  }
               });
 
               taskHistory[currentDate] = {
@@ -456,7 +462,7 @@
               localStorage.setItem('tasks', JSON.stringify(tasks));
               
               updateStats();
-              alert('تم حفظ التغييرات بنجاح');
+              showNotification('تم حفظ التغييرات بنجاح ✓');
           }
 
           function renderTasks() {
@@ -488,16 +494,7 @@
               
               const completionRateElement = document.getElementById('completionRate');
               completionRateElement.textContent = `${rate}%`;
-              
-              completionRateElement.classList.remove(
-                  'progress-red',
-                  'progress-orange',
-                  'progress-yellow',
-                  'progress-light-green',
-                  'progress-dark-green'
-              );
-              
-              completionRateElement.classList.add(getProgressColor(rate));
+              completionRateElement.style.color = rate >= 50 ? '#2ecc71' : '#e74c3c';
           }
 
           function exportToExcel() {
@@ -511,7 +508,7 @@
                           'التاريخ الهجري': dayData.hijriDate,
                           'التاريخ الميلادي': date,
                           'المهمة': task.text,
-                          'الحالة': task.completed ? '✓ مكتملة' : '✗ غير مكتملة',
+                          'الحالة': task.completed ? '✓ ' : '✗ ',
                           'النوع': task.isDefault ? 'أساسية' : 'مخصصة',
                           'وقت التحديث': task.completionTime || '-'
                       });
@@ -519,7 +516,7 @@
               });
 
               const ws = XLSX.utils.json_to_sheet(allData);
-
+              
               const colWidths = [
                   { wch: 15 },
                   { wch: 15 },
@@ -532,6 +529,7 @@
 
               XLSX.utils.book_append_sheet(wb, ws, "سجل المهام");
               XLSX.writeFile(wb, `سجل_المهام_الكامل.xlsx`);
+              showNotification('تم تصدير التقرير بنجاح ✓');
           }
 
           document.getElementById('newTask').addEventListener('keypress', function(e) {
@@ -540,6 +538,7 @@
               }
           });
 
+          // تشغيل التطبيق
           updateDate();
           loadTasks();
       </script>
