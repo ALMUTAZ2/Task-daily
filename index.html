@@ -219,17 +219,9 @@
               transition: all 0.3s ease;
           }
 
-          #completedTasks {
-              color: #2ecc71;
-          }
-
-          #incompleteTasks {
-              color: #e74c3c;
-          }
-
-          #totalTasks {
-              color: #234E70;
-          }
+          #completedTasks { color: #2ecc71; }
+          #incompleteTasks { color: #e74c3c; }
+          #totalTasks { color: #234E70; }
 
           .stat-label {
               color: #718096;
@@ -318,10 +310,10 @@
       <script>
           const defaultTasks = [
               "أذكار الصباح",
-              " أذكار المساء ",
-              " سورة البقرة",
+              "أذكار المساء ",
+              "سورة البقرة",
               "سورة الواقعة",
-              "سورة الملك ",
+              "سورة الملك",
               "صلاة الوتر"
           ];
 
@@ -346,12 +338,13 @@
                   tasks = JSON.parse(savedTasks);
                   tempTasks = JSON.parse(JSON.stringify(tasks));
               } else {
+                  const now = new Date();
                   tasks = defaultTasks.map(text => ({
                       text,
                       completed: false,
                       isDefault: true,
-                      completionDate: null,
-                      completionTime: null
+                      completionDate: now.toISOString().split('T')[0],
+                      completionTime: now.toLocaleTimeString('ar-SA')
                   }));
                   tempTasks = JSON.parse(JSON.stringify(tasks));
                   saveTasks();
@@ -368,12 +361,13 @@
               const input = document.getElementById('newTask');
               const text = input.value.trim();
               if (text) {
+                  const now = new Date();
                   tempTasks.push({
                       text,
                       completed: false,
                       isDefault: false,
-                      completionDate: null,
-                      completionTime: null
+                      completionDate: now.toISOString().split('T')[0],
+                      completionTime: now.toLocaleTimeString('ar-SA')
                   });
                   input.value = '';
                   hasUnsavedChanges = true;
@@ -384,14 +378,9 @@
 
           function toggleTask(index) {
               tempTasks[index].completed = !tempTasks[index].completed;
-              if (tempTasks[index].completed) {
-                  const now = new Date();
-                  tempTasks[index].completionDate = now.toISOString().split('T')[0];
-                  tempTasks[index].completionTime = now.toLocaleTimeString('ar-SA');
-              } else {
-                  tempTasks[index].completionDate = null;
-                  tempTasks[index].completionTime = null;
-              }
+              const now = new Date();
+              tempTasks[index].completionDate = now.toISOString().split('T')[0];
+              tempTasks[index].completionTime = now.toLocaleTimeString('ar-SA');
               hasUnsavedChanges = true;
               document.getElementById('saveButton').style.display = 'block';
               renderTasks();
@@ -399,6 +388,11 @@
 
           function confirmSave() {
               if (hasUnsavedChanges) {
+                  const now = new Date();
+                  tempTasks.forEach(task => {
+                      task.completionDate = now.toISOString().split('T')[0];
+                      task.completionTime = now.toLocaleTimeString('ar-SA');
+                  });
                   tasks = JSON.parse(JSON.stringify(tempTasks));
                   saveTasks();
                   hasUnsavedChanges = false;
@@ -420,7 +414,8 @@
                       <span class="task-text">${task.text}</span>
                       ${task.completionDate ? `
                           <span class="task-completion-time">
-                              تم الإنجاز: ${task.completionDate} ${task.completionTime}
+                              ${task.completed ? 'تم الإنجاز' : 'آخر تحديث'}: 
+                              ${task.completionDate} ${task.completionTime}
                           </span>
                       ` : ''}
                   `;
@@ -457,8 +452,8 @@
                   'المهمة': task.text,
                   'الحالة': task.completed ? '✓ مكتملة' : '✗ غير مكتملة',
                   'النوع': task.isDefault ? 'أساسية' : 'مخصصة',
-                  'تاريخ الإنجاز': task.completionDate || '-',
-                  'وقت الإنجاز': task.completionTime || '-'
+                  'تاريخ آخر تحديث': task.completionDate || '-',
+                  'وقت آخر تحديث': task.completionTime || '-'
               }));
               
               const ws = XLSX.utils.json_to_sheet(ws_data);
