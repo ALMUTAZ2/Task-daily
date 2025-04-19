@@ -3,7 +3,7 @@
   <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>نظام المهام اليومية الإسلامية</title>
+      <title>نظام محاسبة النفس اليومي</title>
       <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
       <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
       <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
@@ -15,6 +15,8 @@
               --secondary-color: #FBB03B;
               --success-color: #2ecc71;
               --danger-color: #e74c3c;
+              --warning-color: #f1c40f;
+              --orange-color: #e67e22;
               --background-color: #f0f2f5;
               --card-color: #ffffff;
           }
@@ -209,7 +211,6 @@
               margin-bottom: 0.5rem;
           }
 
-          /* تعديل ألوان الإحصائيات */
           .stat-number.completed {
               color: var(--success-color);
           }
@@ -222,6 +223,7 @@
               font-size: 2rem;
               font-weight: 700;
               margin-bottom: 0.5rem;
+              transition: color 0.3s ease;
           }
 
           .stat-label {
@@ -274,7 +276,7 @@
   <body>
       <div class="main-container">
           <header class="header">
-              <h1>المهام اليومية الإسلامية</h1>
+              <h1>محاسبة النفس الإسلامية</h1>
               <div class="date-display">
                   <span class="day-name" id="dayName"></span>
                   <span class="date-value" id="gregorianDate"></span>
@@ -348,7 +350,7 @@
                           ? "0 4px 15px rgba(46, 204, 113, 0.3)"
                           : "0 4px 15px rgba(231, 76, 60, 0.3)",
                   },
-                  onClick: function(){} // إغلاق الإشعار عند النقر عليه
+                  onClick: function(){}
               }).showToast();
           }
 
@@ -385,7 +387,8 @@
                       completed: false,
                       isDefault: true,
                       completionDate: null,
-                      completionTime: null
+                      completionTime: null,
+                      dayName: new Date().toLocaleDateString('ar-SA', { weekday: 'long' })
                   }));
                   localStorage.setItem('lastDate', today);
                   saveTasks();
@@ -412,7 +415,8 @@
                       completed: false,
                       isDefault: false,
                       completionDate: null,
-                      completionTime: null
+                      completionTime: null,
+                      dayName: new Date().toLocaleDateString('ar-SA', { weekday: 'long' })
                   });
                   input.value = '';
                   renderTasks();
@@ -445,17 +449,21 @@
                   calendar: 'islamic-umalqura'
               });
 
+              const dayName = now.toLocaleDateString('ar-SA', { weekday: 'long' });
+
               tasks.forEach(task => {
                   if (task.completed) {
                       task.completionDate = currentDate;
                       task.completionTime = currentTime;
                       task.hijriDate = hijriDate;
+                      task.dayName = dayName;
                   }
               });
 
               taskHistory[currentDate] = {
                   tasks: JSON.parse(JSON.stringify(tasks)),
-                  hijriDate: hijriDate
+                  hijriDate: hijriDate,
+                  dayName: dayName
               };
 
               localStorage.setItem('taskHistory', JSON.stringify(taskHistory));
@@ -494,7 +502,17 @@
               
               const completionRateElement = document.getElementById('completionRate');
               completionRateElement.textContent = `${rate}%`;
-              completionRateElement.style.color = rate >= 50 ? '#2ecc71' : '#e74c3c';
+
+              // تحديث لون نسبة الإنجاز حسب النسبة
+              if (rate <= 25) {
+                  completionRateElement.style.color = '#e74c3c'; // أحمر
+              } else if (rate <= 49) {
+                  completionRateElement.style.color = '#e67e22'; // برتقالي
+              } else if (rate <= 89) {
+                  completionRateElement.style.color = '#f1c40f'; // أصفر
+              } else {
+                  completionRateElement.style.color = '#2ecc71'; // أخضر
+              }
           }
 
           function exportToExcel() {
@@ -505,10 +523,11 @@
                   const dayData = taskHistory[date];
                   dayData.tasks.forEach(task => {
                       allData.push({
+                          'اليوم': task.dayName || dayData.dayName,
                           'التاريخ الهجري': dayData.hijriDate,
                           'التاريخ الميلادي': date,
                           'المهمة': task.text,
-                          'الحالة': task.completed ? '✓ ' : '✗ ',
+                          'الحالة': task.completed ? '✓ ' : '✗  ',
                           'النوع': task.isDefault ? 'أساسية' : 'مخصصة',
                           'وقت التحديث': task.completionTime || '-'
                       });
@@ -518,12 +537,13 @@
               const ws = XLSX.utils.json_to_sheet(allData);
               
               const colWidths = [
-                  { wch: 15 },
-                  { wch: 15 },
-                  { wch: 25 },
-                  { wch: 10 },
-                  { wch: 10 },
-                  { wch: 12 }
+                  { wch: 12 },  // اليوم
+                  { wch: 15 },  // التاريخ الهجري
+                  { wch: 15 },  // التاريخ الميلادي
+                  { wch: 25 },  // المهمة
+                  { wch: 10 },  // الحالة
+                  { wch: 10 },  // النوع
+                  { wch: 12 }   // وقت التحديث
               ];
               ws['!cols'] = colWidths;
 
