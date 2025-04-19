@@ -136,29 +136,6 @@
               transition: all 0.3s ease;
               background: #f8fafc;
               border: 1px solid #e2e8f0;
-              position: relative;
-              overflow: hidden;
-          }
-
-          .task-item::before {
-              content: '';
-              position: absolute;
-              top: 0;
-              left: 0;
-              width: 100%;
-              height: 100%;
-              background: linear-gradient(45deg, transparent, rgba(255,255,255,0.8), transparent);
-              transform: translateX(-100%);
-              transition: transform 0.6s ease;
-          }
-
-          .task-item:hover::before {
-              transform: translateX(100%);
-          }
-
-          .task-item:hover {
-              transform: translateX(-5px);
-              box-shadow: 0 5px 15px rgba(0,0,0,0.05);
           }
 
           .task-checkbox {
@@ -192,12 +169,17 @@
               flex: 1;
               font-size: 1.1rem;
               color: #2d3748;
-              transition: all 0.3s ease;
           }
 
           .task-item.completed .task-text {
               text-decoration: line-through;
               color: #a0aec0;
+          }
+
+          .task-completion-time {
+              font-size: 0.9rem;
+              color: #718096;
+              margin-right: 1rem;
           }
 
           .stats-wrapper {
@@ -228,135 +210,64 @@
               border-radius: 16px;
               text-align: center;
               border: 1px solid #e2e8f0;
-              transition: all 0.3s ease;
-              position: relative;
-              overflow: hidden;
-          }
-
-          .stat-item::before {
-              content: '';
-              position: absolute;
-              top: 0;
-              left: 0;
-              width: 100%;
-              height: 100%;
-              background: linear-gradient(45deg, transparent, rgba(255,255,255,0.8), transparent);
-              transform: translateX(-100%);
-              transition: transform 0.6s ease;
-          }
-
-          .stat-item:hover::before {
-              transform: translateX(100%);
-          }
-
-          .stat-item:hover {
-              transform: translateY(-5px);
-              box-shadow: 0 10px 30px rgba(0,0,0,0.1);
           }
 
           .stat-number {
-              font-size: 3rem;
+              font-size: 2.5rem;
               font-weight: 700;
               margin-bottom: 1rem;
-              background: linear-gradient(45deg, #2d3748, #4a5568);
-              -webkit-background-clip: text;
-              -webkit-text-fill-color: transparent;
-              position: relative;
-              display: inline-block;
+              transition: all 0.3s ease;
           }
 
-          .stat-number.completed {
-              background: linear-gradient(45deg, #2ecc71, #27ae60);
-              -webkit-background-clip: text;
-              -webkit-text-fill-color: transparent;
-              animation: pulseGreen 2s infinite;
+          #completedTasks {
+              color: #2ecc71;
           }
 
-          .stat-number.incomplete {
-              background: linear-gradient(45deg, #e74c3c, #c0392b);
-              -webkit-background-clip: text;
-              -webkit-text-fill-color: transparent;
-              animation: pulseRed 2s infinite;
+          #incompleteTasks {
+              color: #e74c3c;
           }
 
-          @keyframes pulseGreen {
-              0% { transform: scale(1); text-shadow: 0 0 10px rgba(46, 204, 113, 0); }
-              50% { transform: scale(1.05); text-shadow: 0 0 20px rgba(46, 204, 113, 0.3); }
-              100% { transform: scale(1); text-shadow: 0 0 10px rgba(46, 204, 113, 0); }
-          }
-
-          @keyframes pulseRed {
-              0% { transform: scale(1); text-shadow: 0 0 10px rgba(231, 76, 60, 0); }
-              50% { transform: scale(1.05); text-shadow: 0 0 20px rgba(231, 76, 60, 0.3); }
-              100% { transform: scale(1); text-shadow: 0 0 10px rgba(231, 76, 60, 0); }
+          #totalTasks {
+              color: #234E70;
           }
 
           .stat-label {
               color: #718096;
-              font-size: 1.2rem;
-              font-weight: 500;
-              position: relative;
-              padding-top: 1rem;
-          }
-
-          .stat-label::before {
-              content: '';
-              position: absolute;
-              top: 0;
-              left: 50%;
-              transform: translateX(-50%);
-              width: 40px;
-              height: 2px;
-              background: currentColor;
-              opacity: 0.2;
+              font-size: 1.1rem;
           }
 
           .completion-rate {
-              font-size: 3.5rem;
+              font-size: 2.5rem;
               font-weight: 700;
-              text-align: center;
-              transition: all 0.5s ease;
-              position: relative;
-              display: inline-block;
-              padding: 0.5rem 1rem;
-              border-radius: 15px;
               margin-bottom: 1rem;
+              transition: color 0.3s ease;
           }
 
-          .export-btn {
-              background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
-              margin: 2rem auto;
-              padding: 1.2rem 3rem;
-              font-size: 1.2rem;
-              border-radius: 15px;
+          .save-btn {
+              background: linear-gradient(135deg, #2ecc71, #27ae60);
+              margin: 1rem auto;
+              padding: 0.8rem 2rem;
+              font-size: 1rem;
+              border-radius: 12px;
               display: block;
               width: fit-content;
           }
 
-          .export-btn:hover {
-              transform: translateY(-2px);
-              box-shadow: 0 10px 20px rgba(251, 176, 59, 0.3);
+          .export-btn {
+              background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+              margin: 1rem auto;
+              padding: 0.8rem 2rem;
+              font-size: 1rem;
+              border-radius: 12px;
+              display: block;
+              width: fit-content;
           }
 
           @media (max-width: 768px) {
               body { padding: 1rem; }
               .header { padding: 1.5rem; }
               .header h1 { font-size: 2rem; }
-              .day-name { font-size: 1.5rem; }
-              .date-value { font-size: 0.9rem; }
               .input-container { flex-direction: column; }
-              .stat-item { padding: 1rem; }
-          }
-
-          @keyframes slideIn {
-              from { opacity: 0; transform: translateX(30px); }
-              to { opacity: 1; transform: translateX(0); }
-          }
-
-          @keyframes completeTask {
-              0% { transform: scale(1); }
-              50% { transform: scale(1.05); }
-              100% { transform: scale(1); }
           }
       </style>
   </head>
@@ -376,21 +287,22 @@
                   <button onclick="addTask()">إضافة مهمة</button>
               </div>
               <ul class="task-list" id="taskList"></ul>
+              <button class="save-btn" onclick="confirmSave()" id="saveButton" style="display: none;">حفظ التغييرات</button>
           </div>
 
           <div class="stats-wrapper">
               <h2 class="stats-title">إحصائيات اليوم</h2>
               <div class="stats-container">
                   <div class="stat-item">
-                      <div class="stat-number total" id="totalTasks">0</div>
+                      <div class="stat-number" id="totalTasks">0</div>
                       <div class="stat-label">إجمالي المهام</div>
                   </div>
                   <div class="stat-item">
-                      <div class="stat-number completed" id="completedTasks">0</div>
+                      <div class="stat-number" id="completedTasks">0</div>
                       <div class="stat-label">المهام المكتملة</div>
                   </div>
                   <div class="stat-item">
-                      <div class="stat-number incomplete" id="incompleteTasks">0</div>
+                      <div class="stat-number" id="incompleteTasks">0</div>
                       <div class="stat-label">المهام غير المكتملة</div>
                   </div>
                   <div class="stat-item">
@@ -414,6 +326,8 @@
           ];
 
           let tasks = [];
+          let tempTasks = [];
+          let hasUnsavedChanges = false;
           const today = new Date().toISOString().split('T')[0];
 
           function updateDate() {
@@ -426,50 +340,20 @@
               });
           }
 
-          function updateStats() {
-              const total = tasks.length;
-              const completed = tasks.filter(t => t.completed).length;
-              const incomplete = total - completed;
-              const rate = Math.round((completed / total) * 100) || 0;
-
-              document.getElementById('totalTasks').textContent = total;
-              
-              const completedElement = document.getElementById('completedTasks');
-              completedElement.textContent = completed;
-              completedElement.style.animation = 'none';
-              completedElement.offsetHeight;
-              completedElement.style.animation = 'pulseGreen 2s infinite';
-
-              const incompleteElement = document.getElementById('incompleteTasks');
-              incompleteElement.textContent = incomplete;
-              incompleteElement.style.animation = 'none';
-              incompleteElement.offsetHeight;
-              incompleteElement.style.animation = 'pulseRed 2s infinite';
-
-              const rateElement = document.getElementById('completionRate');
-              let color;
-              if (rate >= 100) color = '#2ecc71';
-              else if (rate >= 75) color = '#27ae60';
-              else if (rate >= 50) color = '#f1c40f';
-              else if (rate >= 25) color = '#e67e22';
-              else color = '#e74c3c';
-              
-              rateElement.textContent = `${rate}%`;
-              rateElement.style.color = color;
-              rateElement.style.textShadow = `0 0 10px ${color}40`;
-              rateElement.style.background = `linear-gradient(45deg, ${color}20, transparent)`;
-          }
-
           function loadTasks() {
               const savedTasks = localStorage.getItem(today);
               if (savedTasks) {
                   tasks = JSON.parse(savedTasks);
+                  tempTasks = JSON.parse(JSON.stringify(tasks));
               } else {
                   tasks = defaultTasks.map(text => ({
                       text,
                       completed: false,
-                      isDefault: true
+                      isDefault: true,
+                      completionDate: null,
+                      completionTime: null
                   }));
+                  tempTasks = JSON.parse(JSON.stringify(tasks));
                   saveTasks();
               }
               renderTasks();
@@ -484,32 +368,49 @@
               const input = document.getElementById('newTask');
               const text = input.value.trim();
               if (text) {
-                  tasks.push({
+                  tempTasks.push({
                       text,
                       completed: false,
-                      isDefault: false
+                      isDefault: false,
+                      completionDate: null,
+                      completionTime: null
                   });
                   input.value = '';
-                  saveTasks();
+                  hasUnsavedChanges = true;
+                  document.getElementById('saveButton').style.display = 'block';
                   renderTasks();
               }
           }
 
           function toggleTask(index) {
-              tasks[index].completed = !tasks[index].completed;
-              saveTasks();
+              tempTasks[index].completed = !tempTasks[index].completed;
+              if (tempTasks[index].completed) {
+                  const now = new Date();
+                  tempTasks[index].completionDate = now.toISOString().split('T')[0];
+                  tempTasks[index].completionTime = now.toLocaleTimeString('ar-SA');
+              } else {
+                  tempTasks[index].completionDate = null;
+                  tempTasks[index].completionTime = null;
+              }
+              hasUnsavedChanges = true;
+              document.getElementById('saveButton').style.display = 'block';
               renderTasks();
+          }
 
-              if (tasks[index].completed) {
-                  const taskElement = document.querySelectorAll('.task-item')[index];
-                  taskElement.style.animation = 'completeTask 0.5s ease-out';
+          function confirmSave() {
+              if (hasUnsavedChanges) {
+                  tasks = JSON.parse(JSON.stringify(tempTasks));
+                  saveTasks();
+                  hasUnsavedChanges = false;
+                  document.getElementById('saveButton').style.display = 'none';
+                  alert('تم حفظ التغييرات بنجاح');
               }
           }
 
           function renderTasks() {
               const list = document.getElementById('taskList');
               list.innerHTML = '';
-              tasks.forEach((task, index) => {
+              tempTasks.forEach((task, index) => {
                   const li = document.createElement('li');
                   li.className = `task-item ${task.completed ? 'completed' : ''}`;
                   li.innerHTML = `
@@ -517,10 +418,37 @@
                           ${task.completed ? 'checked' : ''} 
                           onchange="toggleTask(${index})">
                       <span class="task-text">${task.text}</span>
+                      ${task.completionDate ? `
+                          <span class="task-completion-time">
+                              تم الإنجاز: ${task.completionDate} ${task.completionTime}
+                          </span>
+                      ` : ''}
                   `;
                   list.appendChild(li);
               });
               updateStats();
+          }
+
+          function updateStats() {
+              const total = tempTasks.length;
+              const completed = tempTasks.filter(t => t.completed).length;
+              const incomplete = total - completed;
+              const rate = Math.round((completed / total) * 100) || 0;
+
+              document.getElementById('totalTasks').textContent = total;
+              document.getElementById('completedTasks').textContent = completed;
+              document.getElementById('incompleteTasks').textContent = incomplete;
+
+              const rateElement = document.getElementById('completionRate');
+              rateElement.textContent = `${rate}%`;
+              
+              if (rate <= 33) {
+                  rateElement.style.color = '#e74c3c';
+              } else if (rate <= 66) {
+                  rateElement.style.color = '#f1c40f';
+              } else {
+                  rateElement.style.color = '#2ecc71';
+              }
           }
 
           function exportToExcel() {
@@ -528,7 +456,9 @@
               const ws_data = tasks.map(task => ({
                   'المهمة': task.text,
                   'الحالة': task.completed ? '✓ مكتملة' : '✗ غير مكتملة',
-                  'النوع': task.isDefault ? 'أساسية' : 'مخصصة'
+                  'النوع': task.isDefault ? 'أساسية' : 'مخصصة',
+                  'تاريخ الإنجاز': task.completionDate || '-',
+                  'وقت الإنجاز': task.completionTime || '-'
               }));
               
               const ws = XLSX.utils.json_to_sheet(ws_data);
