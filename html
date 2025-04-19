@@ -1,0 +1,550 @@
+  <!DOCTYPE html>
+  <html dir="rtl" lang="ar">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>نظام المهام اليومية الإسلامية</title>
+      <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+      <style>
+          :root {
+              --primary-color: #234E70;
+              --secondary-color: #FBB03B;
+              --success-color: #2ecc71;
+              --danger-color: #e74c3c;
+              --background-color: #f0f2f5;
+              --card-color: #ffffff;
+          }
+
+          * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+              font-family: 'Tajawal', sans-serif;
+          }
+
+          body {
+              background: linear-gradient(135deg, #f6f9fc 0%, #edf2f7 100%);
+              min-height: 100vh;
+              padding: 2rem;
+          }
+
+          .main-container {
+              max-width: 900px;
+              margin: 0 auto;
+          }
+
+          .header {
+              text-align: center;
+              margin-bottom: 3rem;
+              padding: 2rem;
+              background: linear-gradient(135deg, #234E70 0%, #1a3a54 100%);
+              border-radius: 20px;
+              color: white;
+              box-shadow: 0 10px 30px rgba(35, 78, 112, 0.15);
+          }
+
+          .header h1 {
+              font-size: 2.5rem;
+              margin-bottom: 1rem;
+              font-weight: 700;
+              text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+          }
+
+          .date-display {
+              display: flex;
+              align-items: baseline;
+              justify-content: center;
+              gap: 0.5rem;
+              margin-top: 1rem;
+              background: rgba(255, 255, 255, 0.1);
+              padding: 0.8rem 1.5rem;
+              border-radius: 12px;
+              backdrop-filter: blur(5px);
+              width: fit-content;
+              margin: 0 auto;
+          }
+
+          .day-name {
+              font-size: 1.8rem;
+              font-weight: 700;
+              color: white;
+          }
+
+          .date-value {
+              font-size: 1rem;
+              color: rgba(255, 255, 255, 0.8);
+          }
+
+          .container {
+              background: white;
+              padding: 2rem;
+              border-radius: 20px;
+              box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+              margin-bottom: 2rem;
+          }
+
+          .input-container {
+              display: flex;
+              gap: 1rem;
+              margin-bottom: 2rem;
+          }
+
+          input[type="text"] {
+              flex: 1;
+              padding: 1rem 1.5rem;
+              border: 2px solid #e2e8f0;
+              border-radius: 12px;
+              font-size: 1.1rem;
+              transition: all 0.3s ease;
+              background: #f8fafc;
+          }
+
+          input[type="text"]:focus {
+              outline: none;
+              border-color: var(--primary-color);
+              box-shadow: 0 0 0 3px rgba(35, 78, 112, 0.1);
+          }
+
+          button {
+              background: var(--primary-color);
+              color: white;
+              border: none;
+              padding: 1rem 2rem;
+              border-radius: 12px;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              font-weight: 500;
+              font-size: 1.1rem;
+          }
+
+          button:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 5px 15px rgba(35, 78, 112, 0.2);
+          }
+
+          .task-list {
+              list-style: none;
+          }
+
+          .task-item {
+              display: flex;
+              align-items: center;
+              padding: 1.2rem;
+              border-radius: 12px;
+              margin-bottom: 1rem;
+              transition: all 0.3s ease;
+              background: #f8fafc;
+              border: 1px solid #e2e8f0;
+              position: relative;
+              overflow: hidden;
+          }
+
+          .task-item::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background: linear-gradient(45deg, transparent, rgba(255,255,255,0.8), transparent);
+              transform: translateX(-100%);
+              transition: transform 0.6s ease;
+          }
+
+          .task-item:hover::before {
+              transform: translateX(100%);
+          }
+
+          .task-item:hover {
+              transform: translateX(-5px);
+              box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+          }
+
+          .task-checkbox {
+              appearance: none;
+              width: 24px;
+              height: 24px;
+              border: 2px solid var(--primary-color);
+              border-radius: 6px;
+              margin-left: 1rem;
+              cursor: pointer;
+              position: relative;
+              transition: all 0.3s ease;
+          }
+
+          .task-checkbox:checked {
+              background: var(--success-color);
+              border-color: var(--success-color);
+          }
+
+          .task-checkbox:checked::after {
+              content: '✓';
+              position: absolute;
+              color: white;
+              font-size: 16px;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+          }
+
+          .task-text {
+              flex: 1;
+              font-size: 1.1rem;
+              color: #2d3748;
+              transition: all 0.3s ease;
+          }
+
+          .task-item.completed .task-text {
+              text-decoration: line-through;
+              color: #a0aec0;
+          }
+
+          .stats-wrapper {
+              background: white;
+              border-radius: 20px;
+              padding: 2rem;
+              box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+              margin-top: 2rem;
+          }
+
+          .stats-title {
+              text-align: center;
+              color: var(--primary-color);
+              margin-bottom: 2rem;
+              font-size: 1.5rem;
+              font-weight: 700;
+          }
+
+          .stats-container {
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+              gap: 1.5rem;
+          }
+
+          .stat-item {
+              background: white;
+              padding: 2rem;
+              border-radius: 16px;
+              text-align: center;
+              border: 1px solid #e2e8f0;
+              transition: all 0.3s ease;
+              position: relative;
+              overflow: hidden;
+          }
+
+          .stat-item::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background: linear-gradient(45deg, transparent, rgba(255,255,255,0.8), transparent);
+              transform: translateX(-100%);
+              transition: transform 0.6s ease;
+          }
+
+          .stat-item:hover::before {
+              transform: translateX(100%);
+          }
+
+          .stat-item:hover {
+              transform: translateY(-5px);
+              box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+          }
+
+          .stat-number {
+              font-size: 3rem;
+              font-weight: 700;
+              margin-bottom: 1rem;
+              background: linear-gradient(45deg, #2d3748, #4a5568);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              position: relative;
+              display: inline-block;
+          }
+
+          .stat-number.completed {
+              background: linear-gradient(45deg, #2ecc71, #27ae60);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              animation: pulseGreen 2s infinite;
+          }
+
+          .stat-number.incomplete {
+              background: linear-gradient(45deg, #e74c3c, #c0392b);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              animation: pulseRed 2s infinite;
+          }
+
+          @keyframes pulseGreen {
+              0% { transform: scale(1); text-shadow: 0 0 10px rgba(46, 204, 113, 0); }
+              50% { transform: scale(1.05); text-shadow: 0 0 20px rgba(46, 204, 113, 0.3); }
+              100% { transform: scale(1); text-shadow: 0 0 10px rgba(46, 204, 113, 0); }
+          }
+
+          @keyframes pulseRed {
+              0% { transform: scale(1); text-shadow: 0 0 10px rgba(231, 76, 60, 0); }
+              50% { transform: scale(1.05); text-shadow: 0 0 20px rgba(231, 76, 60, 0.3); }
+              100% { transform: scale(1); text-shadow: 0 0 10px rgba(231, 76, 60, 0); }
+          }
+
+          .stat-label {
+              color: #718096;
+              font-size: 1.2rem;
+              font-weight: 500;
+              position: relative;
+              padding-top: 1rem;
+          }
+
+          .stat-label::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 50%;
+              transform: translateX(-50%);
+              width: 40px;
+              height: 2px;
+              background: currentColor;
+              opacity: 0.2;
+          }
+
+          .completion-rate {
+              font-size: 3.5rem;
+              font-weight: 700;
+              text-align: center;
+              transition: all 0.5s ease;
+              position: relative;
+              display: inline-block;
+              padding: 0.5rem 1rem;
+              border-radius: 15px;
+              margin-bottom: 1rem;
+          }
+
+          .export-btn {
+              background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+              margin: 2rem auto;
+              padding: 1.2rem 3rem;
+              font-size: 1.2rem;
+              border-radius: 15px;
+              display: block;
+              width: fit-content;
+          }
+
+          .export-btn:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 10px 20px rgba(251, 176, 59, 0.3);
+          }
+
+          @media (max-width: 768px) {
+              body { padding: 1rem; }
+              .header { padding: 1.5rem; }
+              .header h1 { font-size: 2rem; }
+              .day-name { font-size: 1.5rem; }
+              .date-value { font-size: 0.9rem; }
+              .input-container { flex-direction: column; }
+              .stat-item { padding: 1rem; }
+          }
+
+          @keyframes slideIn {
+              from { opacity: 0; transform: translateX(30px); }
+              to { opacity: 1; transform: translateX(0); }
+          }
+
+          @keyframes completeTask {
+              0% { transform: scale(1); }
+              50% { transform: scale(1.05); }
+              100% { transform: scale(1); }
+          }
+      </style>
+  </head>
+  <body>
+      <div class="main-container">
+          <header class="header">
+              <h1>المهام اليومية الإسلامية</h1>
+              <div class="date-display">
+                  <span class="day-name" id="dayName"></span>
+                  <span class="date-value" id="gregorianDate"></span>
+              </div>
+          </header>
+
+          <div class="container">
+              <div class="input-container">
+                  <input type="text" id="newTask" placeholder="أضف مهمة جديدة...">
+                  <button onclick="addTask()">إضافة مهمة</button>
+              </div>
+              <ul class="task-list" id="taskList"></ul>
+          </div>
+
+          <div class="stats-wrapper">
+              <h2 class="stats-title">إحصائيات اليوم</h2>
+              <div class="stats-container">
+                  <div class="stat-item">
+                      <div class="stat-number total" id="totalTasks">0</div>
+                      <div class="stat-label">إجمالي المهام</div>
+                  </div>
+                  <div class="stat-item">
+                      <div class="stat-number completed" id="completedTasks">0</div>
+                      <div class="stat-label">المهام المكتملة</div>
+                  </div>
+                  <div class="stat-item">
+                      <div class="stat-number incomplete" id="incompleteTasks">0</div>
+                      <div class="stat-label">المهام غير المكتملة</div>
+                  </div>
+                  <div class="stat-item">
+                      <div class="completion-rate" id="completionRate">0%</div>
+                      <div class="stat-label">نسبة الإنجاز</div>
+                  </div>
+              </div>
+          </div>
+
+          <button class="export-btn" onclick="exportToExcel()">تصدير التقرير</button>
+      </div>
+
+      <script>
+          const defaultTasks = [
+              "أذكار الصباح",
+              "الصلوات الخمس",
+              "قراءة القرآن",
+              "صلاة الضحى",
+              "أذكار المساء",
+              "صلاة الوتر"
+          ];
+
+          let tasks = [];
+          const today = new Date().toISOString().split('T')[0];
+
+          function updateDate() {
+              const now = new Date();
+              document.getElementById('dayName').textContent = now.toLocaleDateString('ar-SA', { weekday: 'long' });
+              document.getElementById('gregorianDate').textContent = now.toLocaleDateString('ar-SA', {
+                  year: 'numeric',
+                  month: 'numeric',
+                  day: 'numeric'
+              });
+          }
+
+          function updateStats() {
+              const total = tasks.length;
+              const completed = tasks.filter(t => t.completed).length;
+              const incomplete = total - completed;
+              const rate = Math.round((completed / total) * 100) || 0;
+
+              document.getElementById('totalTasks').textContent = total;
+              
+              const completedElement = document.getElementById('completedTasks');
+              completedElement.textContent = completed;
+              completedElement.style.animation = 'none';
+              completedElement.offsetHeight;
+              completedElement.style.animation = 'pulseGreen 2s infinite';
+
+              const incompleteElement = document.getElementById('incompleteTasks');
+              incompleteElement.textContent = incomplete;
+              incompleteElement.style.animation = 'none';
+              incompleteElement.offsetHeight;
+              incompleteElement.style.animation = 'pulseRed 2s infinite';
+
+              const rateElement = document.getElementById('completionRate');
+              let color;
+              if (rate >= 100) color = '#2ecc71';
+              else if (rate >= 75) color = '#27ae60';
+              else if (rate >= 50) color = '#f1c40f';
+              else if (rate >= 25) color = '#e67e22';
+              else color = '#e74c3c';
+              
+              rateElement.textContent = `${rate}%`;
+              rateElement.style.color = color;
+              rateElement.style.textShadow = `0 0 10px ${color}40`;
+              rateElement.style.background = `linear-gradient(45deg, ${color}20, transparent)`;
+          }
+
+          function loadTasks() {
+              const savedTasks = localStorage.getItem(today);
+              if (savedTasks) {
+                  tasks = JSON.parse(savedTasks);
+              } else {
+                  tasks = defaultTasks.map(text => ({
+                      text,
+                      completed: false,
+                      isDefault: true
+                  }));
+                  saveTasks();
+              }
+              renderTasks();
+          }
+
+          function saveTasks() {
+              localStorage.setItem(today, JSON.stringify(tasks));
+              updateStats();
+          }
+
+          function addTask() {
+              const input = document.getElementById('newTask');
+              const text = input.value.trim();
+              if (text) {
+                  tasks.push({
+                      text,
+                      completed: false,
+                      isDefault: false
+                  });
+                  input.value = '';
+                  saveTasks();
+                  renderTasks();
+              }
+          }
+
+          function toggleTask(index) {
+              tasks[index].completed = !tasks[index].completed;
+              saveTasks();
+              renderTasks();
+
+              if (tasks[index].completed) {
+                  const taskElement = document.querySelectorAll('.task-item')[index];
+                  taskElement.style.animation = 'completeTask 0.5s ease-out';
+              }
+          }
+
+          function renderTasks() {
+              const list = document.getElementById('taskList');
+              list.innerHTML = '';
+              tasks.forEach((task, index) => {
+                  const li = document.createElement('li');
+                  li.className = `task-item ${task.completed ? 'completed' : ''}`;
+                  li.innerHTML = `
+                      <input type="checkbox" class="task-checkbox" 
+                          ${task.completed ? 'checked' : ''} 
+                          onchange="toggleTask(${index})">
+                      <span class="task-text">${task.text}</span>
+                  `;
+                  list.appendChild(li);
+              });
+              updateStats();
+          }
+
+          function exportToExcel() {
+              const wb = XLSX.utils.book_new();
+              const ws_data = tasks.map(task => ({
+                  'المهمة': task.text,
+                  'الحالة': task.completed ? '✓ مكتملة' : '✗ غير مكتملة',
+                  'النوع': task.isDefault ? 'أساسية' : 'مخصصة'
+              }));
+              
+              const ws = XLSX.utils.json_to_sheet(ws_data);
+              XLSX.utils.book_append_sheet(wb, ws, "المهام");
+              XLSX.writeFile(wb, `تقرير_المهام_${today}.xlsx`);
+          }
+
+          document.getElementById('newTask').addEventListener('keypress', function(e) {
+              if (e.key === 'Enter') {
+                  addTask();
+              }
+          });
+
+          // تشغيل التطبيق
+          updateDate();
+          loadTasks();
+      </script>
+  </body>
+  </html>
